@@ -16,9 +16,11 @@ import streamlit as st
 
 import almacen
 import datos
+import estilo
 import importar
 
-st.set_page_config(page_title="Viaje Disney 2027", page_icon="✈️", layout="centered")
+st.set_page_config(page_title="Viaje Disney 2027", page_icon="🏰", layout="centered")
+estilo.aplicar()
 
 DIAS_SEMANA = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 CUENTAS_APORTE = ["PROV", "BNA", "MANO", "BIP", "PAYPAL", "MASTER CARD", "MERCADO PAGO"]
@@ -76,7 +78,7 @@ def pedir_clave():
         return
     if st.session_state.get("autorizado"):
         return
-    st.title("✈️ Viaje Disney 2027")
+    estilo.encabezado()
     ingreso = st.text_input("Clave", type="password")
     if ingreso:
         if hmac.compare_digest(str(ingreso).encode(), str(clave).encode()):
@@ -138,7 +140,7 @@ def intentar(funcion, aviso: str, *args):
 # Pantallas
 # --------------------------------------------------------------------------
 def pantalla_importar():
-    st.title("✈️ Disney · Universal · Miami")
+    estilo.encabezado()
     st.write(
         "Para empezar, subí tu planilla en Excel (.xlsx). Se copia **una sola vez** y "
         "después la app trabaja con sus propios datos: no toca tu Google Sheets."
@@ -155,9 +157,7 @@ def pantalla_importar():
 
 
 def pantalla_inicio(d):
-    dias = datos.dias_para(d, hoy())
-    if dias is not None:
-        st.metric("Faltan para el viaje", f"{dias} días" if dias >= 0 else "¡Ya salimos!")
+    if d["config"].get("fecha_salida"):
         st.caption(f"Salida: {fecha_corta(d['config']['fecha_salida'])}")
 
     st.subheader("Ahorros")
@@ -477,7 +477,7 @@ def main():
         tienda = obtener_almacen()
         cargar_datos()
     except (almacen.ErrorAlmacen, ValueError) as e:
-        st.title("✈️ Disney · Universal · Miami")
+        estilo.encabezado()
         st.error(str(e))
         if st.button("Reintentar"):
             st.session_state.pop("cargado", None)
@@ -495,13 +495,13 @@ def main():
         pantalla_importar()
         st.stop()
 
-    st.title("✈️ Disney · Universal · Miami")
+    estilo.encabezado(datos.a_fecha(d["config"]["fecha_salida"]), datos.dias_para(d, hoy()))
     aviso = st.session_state.pop("aviso", None)
     if aviso:
         st.success(aviso)
 
     t_inicio, t_presu, t_ahorros, t_mov, t_itin, t_ajustes = st.tabs(
-        ["Inicio", "Presupuesto", "Ahorros", "Movimientos", "Itinerario", "Ajustes"]
+        ["🏰 Inicio", "🎟️ Presupuesto", "🐷 Ahorros", "💸 Movimientos", "🗓️ Itinerario", "⚙️ Ajustes"]
     )
     with t_inicio:
         pantalla_inicio(d)
